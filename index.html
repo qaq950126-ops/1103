@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toyota MPV 旗艦多功能休旅車 | 探索無限空間與極致工藝</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Font Inter & Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-slate-900 selection:text-white">
+
+    <!-- Navbar / Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl font-black tracking-wider text-slate-900 dark:text-white">TOYOTA <span class="text-red-600 font-light">MPV</span></span>
+                <span class="hidden md:inline-block text-xs uppercase tracking-widest px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full">Hub & Spoke 旗艦探索</span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600 dark:text-slate-300">
+                <a href="#overview" class="hover:text-red-600 transition">3D 預覽</a>
+                <a href="#spokes" class="hover:text-red-600 transition">級距架構</a>
+                <a href="#interactive" class="hover:text-red-600 transition">結構拆解</a>
+                <a href="#specs" class="hover:text-red-600 transition">規格配置</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <button onclick="openConfiguratorModal()" class="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-medium rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition shadow-sm">
+                    立即預約試乘
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section (Hub Principal) -->
+    <section id="overview" class="relative min-h-screen pt-20 flex flex-col justify-center overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center z-10">
+            <div class="lg:col-span-6 space-y-6">
+                <div class="inline-flex items-center space-x-2.5 px-4 py-1.5 bg-slate-900 text-white dark:bg-red-600 dark:text-white text-xs font-semibold rounded-full uppercase tracking-widest shadow-md">
+                    <span class="w-2 h-2 rounded-full bg-red-500 dark:bg-white animate-pulse"></span>
+                    <span>Next-Gen Mobility</span>
+                    <span class="opacity-60">•</span>
+                    <span>極致空間美學</span>
+                </div>
+                <h1 class="text-4xl sm:text-6xl font-bold tracking-tight text-black dark:text-black leading-tight">
+                    重新定義移動空間，<br><span class="text-black dark:text-black">全方位 MPV 旗艦體驗</span>
+                </h1>
+                <p class="text-lg text-slate-600 dark:text-slate-400 font-light leading-relaxed">
+                    涵蓋小型、中型、大型到旗艦商務多種級距。主打極致靈活車室、側滑門便利性與新世代高效油電複合動力，為您與家人打造每一趟尊榮旅程。
+                </p>
+                <div class="flex flex-wrap gap-4 pt-4">
+                    <a href="#spokes" class="px-8 py-4 bg-red-600 text-white font-medium rounded-full shadow-lg hover:bg-red-700 transition flex items-center space-x-2">
+                        <span>探索車系陣容</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </a>
+                    <button onclick="resetCamera()" class="px-8 py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                        重置 3D 視角
+                    </button>
+                </div>
+            </div>
+            <!-- 3D Interactive Canvas Container -->
+            <div class="lg:col-span-6 relative h-[450px] sm:h-[550px] rounded-3xl overflow-hidden glass-panel border border-slate-200/60 dark:border-slate-800 shadow-2xl flex items-center justify-center">
+                <div id="canvas-container" class="absolute inset-0 w-full h-full"></div>
+                <!-- 3D UI Overlay Info -->
+                <div class="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 flex items-center justify-between pointer-events-none">
+                    <div>
+                        <p class="text-xs font-semibold text-red-600 uppercase tracking-widest">Interactive 3D Preview</p>
+                        <h3 id="current-model-title" class="text-sm font-bold text-slate-900 dark:text-white">Toyota Alpha Executive MPV</h3>
+                    </div>
+                    <div class="flex items-center space-x-2 pointer-events-auto">
+                        <button onclick="switchVariant('white')" class="w-6 h-6 rounded-full bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-red-500" title="珍珠白"></button>
+                        <button onclick="switchVariant('black')" class="w-6 h-6 rounded-full bg-slate-900 border border-slate-700 shadow-sm focus:ring-2 focus:ring-red-500" title="尊榮黑"></button>
+                        <button onclick="switchVariant('silver')" class="w-6 h-6 rounded-full bg-slate-400 border border-slate-500 shadow-sm focus:ring-2 focus:ring-red-500" title="極光銀"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hub & Spoke Architecture Section -->
+    <section id="spokes" class="py-24 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <h2 class="text-xs font-bold text-red-600 uppercase tracking-widest">Hub & Spoke架構設計</h2>
+                <h3 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">多元級距，滿足各種生活場景</h3>
+                <p class="text-slate-600 dark:text-slate-400">從日常通勤的小型休旅、家庭出遊的中大型車款，到頂級商務旗艦，提供精準完美的座駕選擇。</p>
+            </div>
+
+            <!-- Spoke Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Spoke 1: Compact MPV -->
+                <div class="group relative p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-red-600/50 transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/50 text-red-600 flex items-center justify-center font-bold text-lg mb-6">01</div>
+                        <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-3">都會靈活型 (Compact)</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">穿梭自如的靈巧身形，結合寬敞側滑門與多變置物空間，完美對應城市快節奏生活。</p>
+                    </div>
+                    <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500">油電/汽油動力</span>
+                        <button onclick="loadSpokeModel('compact')" class="text-sm font-medium text-red-600 hover:text-red-700 flex items-center space-x-1">
+                            <span>載入 3D 模型</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Spoke 2: Mid-Size MPV -->
+                <div class="group relative p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-red-600/50 transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/50 text-red-600 flex items-center justify-center font-bold text-lg mb-6">02</div>
+                        <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-3">家庭尊榮型 (Mid-Size)</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">三排七人座靈活配置，全家出遊每位成員都能享有極佳的頭部與腿部伸展空間。</p>
+                    </div>
+                    <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500">智慧油電複合</span>
+                        <button onclick="loadSpokeModel('midsize')" class="text-sm font-medium text-red-600 hover:text-red-700 flex items-center space-x-1">
+                            <span>載入 3D 模型</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Spoke 3: Large MPV -->
+                <div class="group relative p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-red-600/50 transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/50 text-red-600 flex items-center justify-center font-bold text-lg mb-6">03</div>
+                        <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-3">豪華休旅型 (Large)</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">大器外觀搭配頂級Ottoman頭等艙座椅，兼具豪華質感與強悍性能的長途首選。</p>
+                    </div>
+                    <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500">渦輪油電雙動力</span>
+                        <button onclick="loadSpokeModel('large')" class="text-sm font-medium text-red-600 hover:text-red-700 flex items-center space-x-1">
+                            <span>載入 3D 模型</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Spoke 4: Business Flagship -->
+                <div class="group relative p-8 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-red-600/50 transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/50 text-red-600 flex items-center justify-center font-bold text-lg mb-6">04</div>
+                        <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-3">旗艦商務型 (Flagship)</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">專為層峰領袖打造，極致私密車室、靜肅工程與尊榮禮賓配備，彰顯非凡氣度。</p>
+                    </div>
+                    <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500">旗艦專屬配置</span>
+                        <button onclick="loadSpokeModel('flagship')" class="text-sm font-medium text-red-600 hover:text-red-700 flex items-center space-x-1">
+                            <span>載入 3D 模型</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Exploded View & Interactive Decomposition Section -->
+    <section id="interactive" class="py-24 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 text-xs font-semibold rounded-full uppercase tracking-wider">
+                        <span>Exploded View</span>
+                        <span>•</span>
+                        <span>結構拆解工藝</span>
+                    </div>
+                    <h3 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">將抽象規格化為看得見的直觀結構</h3>
+                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                        透過 3D 爆炸圖（Exploded View）技術，將車體外殼與內部核心零件依序向外展開。清晰展現高剛性車體結構、多層次懸吊系統與寬敞車室模組。
+                    </p>
+                    <div class="flex items-center space-x-4 pt-2">
+                        <button onclick="toggleExplodeView()" id="explode-btn" class="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition shadow">
+                            切換爆炸展開視角
+                        </button>
+                    </div>
+                </div>
+                <div class="lg:col-span-7 bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                            <h4 class="font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-red-600"></span>
+                                <span>TNGA 新世代高剛性底盤</span>
+                            </h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">大幅提升抗扭剛性，結合低重心設計，提供卓越的操控穩定性與乘坐舒適度。</p>
+                        </div>
+                        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                            <h4 class="font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-red-600"></span>
+                                <span>智能電能動力系統</span>
+                            </h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">兼具強悍加速與超低油耗表現，提供靜謐安穩的駕乘體驗與環保優勢。</p>
+                        </div>
+                        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                            <h4 class="font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-red-600"></span>
+                                <span>電動側滑門與迎賓踏板</span>
+                            </h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">大開口雙側滑門設計，讓長輩與小孩上下車更輕鬆便利，尊榮感倍增。</p>
+                        </div>
+                        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                            <h4 class="font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-red-600"></span>
+                                <span>Toyota Safety Sense 安全防護</span>
+                            </h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">全方位主被動安全防護科技，隨時守護全車乘員的行車安全。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Specifications & CTA Section -->
+    <section id="specs" class="py-24 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <h2 class="text-xs font-bold text-red-600 uppercase tracking-widest">Specifications & Pricing</h2>
+                <h3 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">車型規格與理性比較</h3>
+                <p class="text-slate-600 dark:text-slate-400">為尋求新車的您提供清晰透明的規格對比，快速找到最適合您的理想坐駕。</p>
+            </div>
+
+            <!-- Specs Table -->
+            <div class="overflow-x-auto rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 mb-12">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            <th class="p-6">車型系列</th>
+                            <th class="p-6">級距定位</th>
+                            <th class="p-6">座位配置</th>
+                            <th class="p-6">動力系統</th>
+                            <th class="p-6">建議售價 (萬元起)</th>
+                            <th class="p-6 text-right">動作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+                        <tr class="hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition">
+                            <td class="p-6 font-bold text-slate-900 dark:text-white">Toyota Sienta Pro</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">都會靈活型</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">5 / 7 人座</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">1.5L 油電複合</td>
+                            <td class="p-6 font-semibold text-red-600">NT$ 74.9 萬起</td>
+                            <td class="p-6 text-right">
+                                <button onclick="openConfiguratorModal('Sienta Pro')" class="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-medium rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition">了解詳情</button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition">
+                            <td class="p-6 font-bold text-slate-900 dark:text-white">Toyota Noah Hybrid</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">家庭尊榮型</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">7 / 8 人座</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">2.0L 智能油電</td>
+                            <td class="p-6 font-semibold text-red-600">NT$ 119.0 萬起</td>
+                            <td class="p-6 text-right">
+                                <button onclick="openConfiguratorModal('Noah Hybrid')" class="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-medium rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition">了解詳情</button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition">
+                            <td class="p-6 font-bold text-slate-900 dark:text-white">Toyota Alphard Grande</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">豪華旗艦型</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">7 人座 (Ottoman)</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">2.5L 渦輪油電</td>
+                            <td class="p-6 font-semibold text-red-600">NT$ 315.0 萬起</td>
+                            <td class="p-6 text-right">
+                                <button onclick="openConfiguratorModal('Alphard Grande')" class="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-medium rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition">了解詳情</button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition">
+                            <td class="p-6 font-bold text-slate-900 dark:text-white">Toyota Granvia Business</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">旗艦商務型</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">6 / 9 人座</td>
+                            <td class="p-6 text-slate-600 dark:text-slate-400">2.8L 柴油渦輪</td>
+                            <td class="p-6 font-semibold text-red-600">NT$ 187.9 萬起</td>
+                            <td class="p-6 text-right">
+                                <button onclick="openConfiguratorModal('Granvia Business')" class="px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-medium rounded-full hover:bg-slate-800 dark:hover:bg-slate-100 transition">了解詳情</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Call to Action Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-12 text-center shadow-2xl">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(220,38,38,0.2),transparent_50%)]"></div>
+                <div class="relative z-10 max-w-2xl mx-auto space-y-6">
+                    <h3 class="text-3xl font-bold">準備好體驗全新的移動生活了嗎？</h3>
+                    <p class="text-slate-400 font-light">立即預約全台展示中心試乘體驗，親身感受 Toyota MPV 車系的頂級舒適與靈活空間。</p>
+                    <div class="flex flex-wrap justify-center gap-4 pt-2">
+                        <button onclick="openConfiguratorModal('預約試乘')" class="px-8 py-4 bg-red-600 text-white font-medium rounded-full shadow-lg hover:bg-red-700 transition">
+                            立即預約試乘
+                        </button>
+                        <a href="#overview" class="px-8 py-4 bg-slate-800 text-white font-medium rounded-full border border-slate-700 hover:bg-slate-700 transition">
+                            返回 3D 預覽
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-center text-sm text-slate-500">
+        <p>© 2026 Toyota Motor Corporation. All rights reserved. Hub & Spoke Immersive Experience.</p>
+    </footer>
+
+    <!-- Interactive Modal Notification / Configurator -->
+    <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl max-w-md w-full mx-4 shadow-2xl border border-slate-200 dark:border-slate-800 text-center space-y-6 relative">
+            <button onclick="closeConfiguratorModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-950/50 text-red-600 rounded-2xl mx-auto flex items-center justify-center">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <div class="space-y-2">
+                <h3 id="modal-title" class="text-2xl font-bold text-slate-900 dark:text-white">預約試乘與諮詢</h3>
+                <p id="modal-desc" class="text-slate-600 dark:text-slate-400 text-sm">感謝您對 Toyota MPV 旗艦車系的關注，我們將有專人與您聯繫安排實車試乘體驗。</p>
+            </div>
+            <div class="space-y-3">
+                <input type="text" placeholder="請輸入您的姓名" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+                <input type="tel" placeholder="請輸入您的手機號碼" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+                <button onclick="submitBooking()" class="w-full py-3.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition shadow">
+                    確認送出預約
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js & Application Script -->
+    <script>
+        let scene, camera, renderer, carGroup, controls;
+        let isExploded = false;
+        let carParts = [];
+        let currentMaterialColor = 0xffffff;
+
+        function init3D() {
+            const container = document.getElementById('canvas-container');
+            
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf8fafc);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(6, 4, 8);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // Orbit Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 + 0.05;
+            controls.minDistance = 4;
+            controls.maxDistance = 15;
+
+            // Lighting (PBR Realistic Setup)
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+            dirLight.position.set(10, 20, 15);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            scene.add(dirLight);
+
+            const fillLight = new THREE.DirectionalLight(0xdbeafe, 1.0);
+            fillLight.position.set(-10, -10, -10);
+            scene.add(fillLight);
+
+            // Ground Shadow Plane
+            const shadowGeometry = new THREE.PlaneGeometry(30, 30);
+            const shadowMaterial = new THREE.ShadowMaterial({ opacity: 0.15 });
+            const shadowPlane = new THREE.Mesh(shadowGeometry, shadowMaterial);
+            shadowPlane.rotation.x = -Math.PI / 2;
+            shadowPlane.position.y = -0.8;
+            shadowPlane.receiveShadow = true;
+            scene.add(shadowPlane);
+
+            // Build Stylized 3D Toyota MPV Model
+            buildMPVModel();
+
+            // Window Resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Animation Loop
+            animate();
+        }
+
+        function buildMPVModel() {
+            carGroup = new THREE.Group();
+            carParts = [];
+
+            const bodyMaterial = new THREE.MeshStandardMaterial({
+                color: currentMaterialColor,
+                metalness: 0.8,
+                roughness: 0.2
+            });
+
+            const glassMaterial = new THREE.MeshPhysicalMaterial({
+                color: 0x0f172a,
+                metalness: 0.1,
+                roughness: 0.1,
+                transparent: true,
+                opacity: 0.8,
+                transmission: 0.9
+            });
+
+            const wheelMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1e293b,
+                metalness: 0.5,
+                roughness: 0.5
+            });
+
+            const chromeMaterial = new THREE.MeshStandardMaterial({
+                color: 0xe2e8f0,
+                metalness: 0.9,
+                roughness: 0.1
+            });
+
+            // Main Body Lower
+            const lowerGeo = new THREE.BoxGeometry(4.2, 1.0, 2.0);
+            const lowerMesh = new THREE.Mesh(lowerGeo, bodyMaterial);
+            lowerMesh.position.set(0, -0.2, 0);
+            lowerMesh.castShadow = true;
+            lowerMesh.receiveShadow = true;
+            lowerMesh.userData = { explodeOffset: new THREE.Vector3(0, -0.3, 0) };
+            carGroup.add(lowerMesh);
+            carParts.push(lowerMesh);
+
+            // Cabin Upper (MPV Boxy Shape)
+            const cabinGeo = new THREE.BoxGeometry(3.0, 1.1, 1.8);
+            const cabinMesh = new THREE.Mesh(cabinGeo, glassMaterial);
+            cabinMesh.position.set(-0.2, 0.9, 0);
+            cabinMesh.castShadow = true;
+            cabinMesh.userData = { explodeOffset: new THREE.Vector3(0, 0.6, 0) };
+            carGroup.add(cabinMesh);
+            carParts.push(cabinMesh);
+
+            // Front Grille & Headlights Chrome Accent
+            const grilleGeo = new THREE.BoxGeometry(0.2, 0.8, 1.8);
+            const grilleMesh = new THREE.Mesh(grilleGeo, chromeMaterial);
+            grilleMesh.position.set(2.1, -0.2, 0);
+            grilleMesh.userData = { explodeOffset: new THREE.Vector3(0.8, 0, 0) };
+            carGroup.add(grilleMesh);
+            carParts.push(grilleMesh);
+
+            // 4 Wheels
+            const wheelGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.3, 32);
+            wheelGeo.rotateX(Math.PI / 2);
+
+            const wheelPositions = [
+                { x: 1.4, y: -0.7, z: 1.0, exp: new THREE.Vector3(0, -0.3, 0.6) },
+                { x: 1.4, y: -0.7, z: -1.0, exp: new THREE.Vector3(0, -0.3, -0.6) },
+                { x: -1.4, y: -0.7, z: 1.0, exp: new THREE.Vector3(0, -0.3, 0.6) },
+                { x: -1.4, y: -0.7, z: -1.0, exp: new THREE.Vector3(0, -0.3, -0.6) }
+            ];
+
+            wheelPositions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMaterial);
+                wheel.position.set(pos.x, pos.y, pos.z);
+                wheel.castShadow = true;
+                wheel.userData = { explodeOffset: pos.exp };
+                carGroup.add(wheel);
+                carParts.push(wheel);
+            });
+
+            scene.add(carGroup);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (!isExploded && carGroup) {
+                carGroup.rotation.y += 0.003;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function resetCamera() {
+            camera.position.set(6, 4, 8);
+            controls.target.set(0, 0, 0);
+            controls.reset();
+            isExploded = false;
+            updateExplodePositions();
+        }
+
+        function switchVariant(colorType) {
+            if (colorType === 'white') currentMaterialColor = 0xffffff;
+            if (colorType === 'black') currentMaterialColor = 0x111827;
+            if (colorType === 'silver') currentMaterialColor = 0x94a3b8;
+
+            scene.remove(carGroup);
+            buildMPVModel();
+        }
+
+        function loadSpokeModel(type) {
+            let title = "Toyota MPV 旗艦車系";
+            if (type === 'compact') {
+                currentMaterialColor = 0x3b82f6; // Blue
+                title = "Toyota Sienta Pro (都會靈活型)";
+            } else if (type === 'midsize') {
+                currentMaterialColor = 0x10b981; // Green
+                title = "Toyota Noah Hybrid (家庭尊榮型)";
+            } else if (type === 'large') {
+                currentMaterialColor = 0xef4444; // Red
+                title = "Toyota Alphard Grande (豪華休旅型)";
+            } else if (type === 'flagship') {
+                currentMaterialColor = 0x64748b; // Slate
+                title = "Toyota Granvia Business (旗艦商務型)";
+            }
+
+            document.getElementById('current-model-title').innerText = title;
+            scene.remove(carGroup);
+            buildMPVModel();
+            
+            // Smooth scroll back to 3D overview
+            document.getElementById('overview').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function toggleExplodeView() {
+            isExploded = !isExploded;
+            const btn = document.getElementById('explode-btn');
+            if (isExploded) {
+                btn.innerText = "組合收合視角";
+                btn.classList.add('bg-red-600', 'text-white');
+                btn.classList.remove('bg-slate-900', 'dark:bg-white', 'text-white', 'dark:text-slate-900');
+            } else {
+                btn.innerText = "切換爆炸展開視角";
+                btn.classList.remove('bg-red-600', 'text-white');
+                btn.classList.add('bg-slate-900', 'dark:bg-white', 'text-white', 'dark:text-slate-900');
+            }
+            updateExplodePositions();
+        }
+
+        function updateExplodePositions() {
+            carParts.forEach(part => {
+                const targetPos = part.userData.explodeOffset;
+                const startPos = new THREE.Vector3(0,0,0);
+                
+                let progress = 0;
+                const duration = 600;
+                const startTime = performance.now();
+
+                function animatePart(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    progress = Math.min(elapsed / duration, 1);
+                    // Ease out cubic
+                    const ease = 1 - Math.pow(1 - progress, 3);
+
+                    if (isExploded) {
+                        part.position.x = part.userData.baseX ? part.userData.baseX + targetPos.x * ease : part.position.x + targetPos.x * ease;
+                        part.position.y = part.userData.baseY ? part.userData.baseY + targetPos.y * ease : part.position.y + targetPos.y * ease;
+                        part.position.z = part.userData.baseZ ? part.userData.baseZ + targetPos.z * ease : part.position.z + targetPos.z * ease;
+                    } else {
+                        // Return to base
+                        part.position.set(0, 0, 0); // Simplified reset
+                    }
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animatePart);
+                    }
+                }
+                requestAnimationFrame(animatePart);
+            });
+        }
+
+        function openConfiguratorModal(carName = 'Toyota MPV 旗艦專屬') {
+            document.getElementById('modal-title').innerText = `預約試乘 - ${carName}`;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeConfiguratorModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function submitBooking() {
+            closeConfiguratorModal();
+            alert("預約成功！我們的專員將會在 24 小時內與您聯繫，感謝您的支持。");
+        }
+
+        window.onload = function() {
+            init3D();
+        };
+    </script>
+</body>
+</html>
